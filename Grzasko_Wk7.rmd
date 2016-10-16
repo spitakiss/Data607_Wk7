@@ -1,0 +1,227 @@
+---
+title: 'Data 607 Wk 7: HTML, XML, and JSON'
+author: "Aaron Grzasko"
+date: "October 9, 2016"
+output: 
+    html_document:
+        theme: simplex
+        highlight: haddock
+---
+
+---
+
+## Assignment Overview  
+  
+For this assignment, I first collected five attributes for three different statistics texts on my bookshelf.  
+  
+Here is a list of those attributes:  
+
+* Author(s)  
+* Title  
+* Publisher
+* Original publication year  
+* ISBN 10 number  
+  
+Next, I manually stored the book attribute data in three separate file formats:  
+  
+* HTML
+* XML
+* JSON  
+  
+In this R Markdown file, I use multiple R packages--most notably *jsonlite* and *XML*--to read each raw file format into R.  
+I then store each data file as an R data frame and perform various data cleansing techniques.  The ultimate goal of this exercise is to transform the three separate, raw files into identical data frames.  
+
+## Load Libraries
+```{r, comment=NA, warning=FALSE, message=FALSE}
+if (!require(XML)) install.packages('XML')
+if (!require(stringr)) install.packages('stringr')
+if (!require(RCurl)) install.packages('RCurl')
+if (!require(knitr)) install.packages('knitr')
+if (!require(jsonlite)) install.packages('jsonlite')
+```
+
+## HTML Table
+  
+**Read in data**  
+  
+Let's first read the HTML table data, which is stored on my Github repository:  
+
+```{r, comment=NA, tidy=TRUE}
+# url for raw html file; using getURL() from RCurl package 
+html_raw <- getURL("https://raw.githubusercontent.com/spitakiss/Data607_Wk7/master/books.html")  
+
+# read in data, store as data frame; using readHTMLTable() function from the XML package
+html_df <- readHTMLTable(html_raw, header=TRUE, as.data.frame = TRUE,trim = TRUE, stringsAsFactors=FALSE) 
+html_df <- data.frame(html_df)
+```
+  
+  
+**First Look**  
+  
+Let's examine the initial data frame, as well as various column attributes using the `summary()` function:  
+  
+```{r, comment=NA}
+kable(html_df)
+
+summary(html_df)
+```
+  
+You may have noticed that there are separate columns for *author1* and *author2*.  This is because the raw html file had separate tag elements with these names.  The *author2* column is only populated when a book as more than one author.  
+  
+There are a few issues with the initial data frame:  
+  
+* Each column name starts with the string "NULL."  
+* We have white space or blank values in the *author2* column.  We wish to populate thee elements with `NA`.  
+* The publication year was converted to a character.  I would prefer to store the year as an integer.  
+  
+**Data Scrubbing**   
+  
+Below, I perform the necessary data cleanup:
+
+```{r}
+# clean up column names 
+names(html_df) <- str_replace_all(names(html_df),"NULL.","")
+
+# replace white spaces or blanks with NAs
+html_df$author2 <- ifelse(html_df$author2 %in% c(""," ","NA"), NA, html_df$author2)
+
+# convert year to integer
+html_df$orig_pub_year <- as.integer(html_df$orig_pub_year)
+
+```
+  
+**Final Data Frame**  
+  
+Here is our final data frame created using the original HTML file:  
+
+```{r}
+kable(html_df)
+```
+
+
+
+## XML  
+  
+**Read in data**  
+  
+Let's retrieve and read in the xml raw file, stored on my Github repository:  
+  
+```{r}
+# url
+xml_raw <- getURL("https://raw.githubusercontent.com/spitakiss/Data607_Wk7/master/books.xml")
+
+# reading to data frame using function from XML package
+xml_df <- xmlToDataFrame(xml_raw, stringsAsFactors=FALSE)
+
+```
+  
+**First Look**  
+  
+Let's examine the data frame in its current form:  
+  
+```{r, comment=NA}
+kable(xml_df)
+
+summary(xml_df)
+```
+  
+We again have multiple issues with our current data frame:  
+  
+* There is only one *authors* column instead of two.  This is because the raw XML file had one <authors> tag with two separate attributes, *author1* and *author2*.  This problem presumably could have been avoided if the raw XML file had separate *<author1>* and *<author2>* tags.  
+* The publication year was converted to a character.  This should be stored as an integer.  
+  
+
+**Data Scrubbing**  
+  
+I will now address the issues noted in the previous section:  
+  
+  
+```{r}
+# use regex from stringr package to  create separate vector objects for author1 and author2 
+author1 <- str_sub(xml_df$authors,start = str_locate(xml_df$authors,'author1=[[:print:]]+?\"'))
+author1 <- str_replace_all(author1,'"',"")
+author1 <- str_replace_all(author1, "author1=","")
+
+author2 <- str_sub(xml_df$authors,start = str_locate(xml_df$authors,'author2=([[:print:]])+"?'))
+author2 <- str_replace_all(author2,'"',"")
+author2 <- str_replace_all(author2, "author2=","")
+
+# add author 1 and author2 objects to existing data frame
+xml_df$author1 <- author1
+xml_df$author2 <- author2
+
+# subset data frame, exclude the original authors column
+xml_df <- subset(xml_df, select =c(author1, author2, title, publisher, orig_pub_year, isbn10))
+
+# convert publication year data type to integer
+xml_df$orig_pub_year <- as.integer(xml_df$orig_pub_year)
+
+```
+  
+**Final Data Frame**  
+  
+Here is the final data frame created from the original XML file:  
+  
+```{r}
+kable(xml_df)
+```
+
+## JSON  
+  
+**Read in data**  
+  
+Let's retrieve and read in the json file, once again stored on my Github repository:  
+```{r, comment=NA}
+# url
+json_raw <- getURL("https://raw.githubusercontent.com/spitakiss/Data607_Wk7/master/books.json")
+
+# store as data frame, using fromJSON() function in jsonlite package
+json_df <- fromJSON(json_raw)
+```
+  
+**First Look**  
+  
+```{r, comment=NA}
+json_df
+
+summary(json_df)
+```
+  
+You'll notice that I did not use the `kable()` function with the data frame.  This is because the program errors out when I attempt to do so.   
+  
+Here are the issues with the data frame:  
+  
+* The original JSON raw file had a key, *authors*, which itself had two nested keys, *author1* and *author1*.  When we converted the data to an R data frame, the original *authors* column was treated as a nested data frame within the main json_df data frame.  This issue is also prevented us from using the `kable()` function.  
+*  The publication year is again stored as a string.  This problem may have been avoided if the raw JSON file did not list each publication year in double quotes.  
+  
+**Data Scrubbing**  
+  
+Let's fix issues noted above:  
+
+```{r}
+
+# create new data frame columns, author1 and author2
+
+json_df$author1 <- json_df$authors[[1]]
+json_df$author2 <- json_df$authors[[2]]
+
+# subset the data frame to exclude the authors column
+json_df <- subset(json_df, select  = c(author1, author2, title, publisher, orig_pub_year, isbn10))
+
+
+# convert publication year to an integer
+json_df$orig_pub_year <- as.integer(json_df$orig_pub_year)
+
+
+```
+  
+**Final Data Frame**  
+  
+Now we have a clean data frame, and we can properly use the `kable()` function:  
+  
+```{r}
+kable(json_df)
+```
+
+
+
