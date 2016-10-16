@@ -1,0 +1,32 @@
+<?xml version = "1.0" encoding="UTF-8"?>
+
+<bookshelf>
+
+    <book>
+        <authors> author1="Bolstad, William M."</authors> 
+        <title>Introduction to Bayesian Statistics</title>
+        <publisher>Wiley-Interscience</publisher>
+        <orig_pub_year>2004</orig_pub_year>
+        <isbn10>0470141158</isbn10>
+    </book>
+    
+    <book>
+        <authors> author1="Foreman, John W."</authors> 
+        <title>Data Smart: Using Data Science to Trainsform Information into Insight</title>
+        <publisher>John Wiley and Sons</publisher>
+        <orig_pub_year>2013</orig_pub_year>
+        <isbn10>111866146X</isbn10>
+    </book>
+    
+    <book>
+        <authors> author1="Gonick, Larry", author2="Smith, Woollcott"</authors>
+        <title>The Cartoon Guide to Statistics</title>
+        <publisher>William Morrow Paperbacks</publisher>
+       <orig_pub_year>1993</orig_pub_year>
+        <isbn10>0062731025</isbn10>
+    </book>
+
+
+
+
+</bookshelf>

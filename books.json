@@ -1,0 +1,29 @@
+
+   [
+	
+      {
+         "authors": {"author1": "Bolstad, William M."},
+         "title": "Introduction to Bayesian Statistics",
+         "publisher": "Wiley-Interscience" ,
+         "orig_pub_year": "2004",
+         "isbn10": "0470141158"
+      },
+	
+      {
+         "authors": {"author1": "Foreman, John W."},
+         "title": "Data Smart: Using Data Science to Trainsform Information into Insight",
+         "publisher": "John Wiley and Sons" ,
+         "orig_pub_year": "2013",
+         "isbn10": "111866146X"
+      },
+      
+      {
+         "authors": {"author1": "Gonick, Larry", "author2":"Smith, Woollcott"},
+         "title": "The Cartoon Guide to Statistics",
+         "publisher": "William Morrow Paperbacks" ,
+         "orig_pub_year": "1993",
+         "isbn10": "0062731025"
+      }
+      
+      
+   ]
